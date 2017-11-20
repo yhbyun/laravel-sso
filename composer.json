@@ -1,0 +1,26 @@
+{
+    "name": "losted/laravel-sso",
+    "description": "SSO for Laravel",
+    "keywords": ["laravel", "sso", "authentication"],
+    "authors": [
+        {
+            "name": "losted",
+            "email": "losted@losted.net"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "losted\\SSO\\SSOServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-0": {
+            "losted\\SSO": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    }
+}
