@@ -2,7 +2,6 @@
 
 namespace losted\SSO;
 
-use App\User;
 use losted\SSO\Models\Broker;
 use Illuminate\Support\Facades\Auth;
 use losted\SSO\Exceptions\Exception;
@@ -11,6 +10,13 @@ use losted\SSO\Exceptions\AuthenticationException;
 
 class Server
 {
+    /**
+     * The user provider implementation.
+     *
+     * @var \Illuminate\Contracts\Auth\UserProvider
+     */
+    protected $provider;
+
     /**
      * @var string
      */
@@ -28,6 +34,7 @@ class Server
 
     public function __construct(array $options = [])
     {
+        $this->provider = app('auth')->createUserProvider('users');
         $this->options = $options + $this->options;
     }
 
@@ -368,7 +375,7 @@ class Server
             throw new AuthenticationException("Password isn't set.");
         }
 
-        if (Auth::attempt(['email' => $username, 'password' => $password])) {
+        if (Auth::attempt([$this->username() => $username, 'password' => $password])) {
             return;
         }
 
@@ -376,18 +383,20 @@ class Server
     }
 
     /**
-     * Get the user information
+     * Get the login username to be used by the controller.
+     *
+     * @return string
      */
-    public function getUserInfo($email)
+    protected function username()
     {
-        return User::where('email', $email)->firstOrFail();
+        return config('sso.username_field', 'email');
     }
 
     /**
-     * Get user by ID
+     * Get the user information
      */
-    public function getUserById($id)
+    public function getUserInfo($username)
     {
-        return User::findOrFail($id);
+        return $this->provider->retrieveByCredentials([$this->username() => $username]);
     }
 }
