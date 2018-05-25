@@ -25,7 +25,7 @@ class SSOSessionGuard extends SessionGuard implements Guard
      */
     protected $provider;
 
-    protected $debug = true;
+    protected $debug = false;
 
     /**
      * Create a new authentication guard.
