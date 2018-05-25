@@ -3,17 +3,14 @@
 namespace losted\SSO;
 
 use App\User;
-
 use losted\SSO\Models\Broker;
-use losted\SSO\Exceptions\Exception;
-use losted\SSO\Exceptions\AuthenticationException;
-
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
+use losted\SSO\Exceptions\Exception;
+use Illuminate\Support\Facades\Cache;
+use losted\SSO\Exceptions\AuthenticationException;
 
 class Server
 {
-
     /**
      * @var string
      */
@@ -56,7 +53,9 @@ class Server
         }
 
         if (session_status() === PHP_SESSION_ACTIVE) {
-            if ($linked_id !== session_id()) throw new \Exception("Session has already started", 400);
+            if ($linked_id !== session_id()) {
+                throw new \Exception('Session has already started', 400);
+            }
             return;
         }
 
@@ -73,7 +72,7 @@ class Server
     {
         $headers = getallheaders();
 
-        if (isset($headers['Authorization']) &&  strpos($headers['Authorization'], 'Bearer') === 0) {
+        if (isset($headers['Authorization']) && strpos($headers['Authorization'], 'Bearer') === 0) {
             $headers['Authorization'] = substr($headers['Authorization'], 7);
             return $headers['Authorization'];
         }
@@ -98,14 +97,14 @@ class Server
         $matches = null;
 
         if (!preg_match('/^SSO-(\w*+)-(\w*+)-([a-z0-9]*+)$/', $this->getBrokerSessionId(), $matches)) {
-            return $this->fail("Invalid session id");
+            return $this->fail('Invalid session id');
         }
 
         $broker_id = $matches[1];
         $token = $matches[2];
 
         if ($this->generateSessionId($broker_id, $token) != $sid) {
-            return $this->fail("Checksum failed: Client IP address may have changed", 403);
+            return $this->fail('Checksum failed: Client IP address may have changed', 403);
         }
 
         return $broker_id;
@@ -116,7 +115,9 @@ class Server
      */
     protected function startUserSession()
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
     }
 
     /**
@@ -124,9 +125,11 @@ class Server
      */
     protected function generateSessionId($broker_id, $token)
     {
-        $broker = $this->get_broker_info($broker_id);
+        $broker = $this->getBrokerInfo($broker_id);
 
-        if (!isset($broker)) return null;
+        if (!isset($broker)) {
+            return null;
+        }
 
         return "SSO-{$broker_id}-{$token}-" . hash('sha256', 'session' . $token . $broker['secret']);
     }
@@ -136,9 +139,11 @@ class Server
      */
     protected function generateAttachChecksum($broker_id, $token)
     {
-        $broker = $this->get_broker_info($broker_id);
+        $broker = $this->getBrokerInfo($broker_id);
 
-        if (!isset($broker)) return null;
+        if (!isset($broker)) {
+            return null;
+        }
 
         return hash('sha256', 'attach' . $token . $broker['secret']);
     }
@@ -167,59 +172,62 @@ class Server
     {
         $this->detectReturnType();
 
-        if (empty($_REQUEST['broker'])) return $this->fail("No broker specified", 400);
-        if (empty($_REQUEST['token'])) return $this->fail("No token specified", 400);
+        if (empty($_REQUEST['broker'])) {
+            return $this->fail('No broker specified', 400);
+        }
+        if (empty($_REQUEST['token'])) {
+            return $this->fail('No token specified', 400);
+        }
 
-        if (!$this->return_type) return $this->fail("No return url specified", 400);
+        if (!$this->return_type) {
+            return $this->fail('No return url specified', 400);
+        }
 
         $checksum = $this->generateAttachChecksum($_REQUEST['broker'], $_REQUEST['token']);
 
         if (empty($_REQUEST['checksum']) || $checksum != $_REQUEST['checksum']) {
-            return $this->fail("Invalid checksum", 400);
+            return $this->fail('Invalid checksum', 400);
         }
 
         $this->startUserSession();
         $sid = $this->generateSessionId($_REQUEST['broker'], $_REQUEST['token']);
 
-        Cache::put($sid, $this->get_session_data('id'), $this->options['session_ttl']);
+        Cache::put($sid, $this->getSessionData('id'), $this->options['session_ttl']);
 
-        $this->output_attach_success();
+        return $this->outputAttachSuccess();
     }
 
     /**
      * Output on a successful attach
      */
-    protected function output_attach_success()
+    protected function outputAttachSuccess()
     {
         if ($this->return_type === 'image') {
-            $this->output_image();
+            return $this->outputImage();
         }
 
         if ($this->return_type === 'json') {
-            header('Content-type: application/json; charset=UTF-8');
-            echo json_encode(['success' => 'attached']);
+            return response()->json(['success' => 'attached']);
         }
 
         if ($this->return_type === 'jsonp') {
             $data = json_encode(['success' => 'attached']);
-            echo $_REQUEST['callback'] . "($data, 200);";
+            return $_REQUEST['callback'] . "($data, 200);";
         }
 
         if ($this->return_type === 'redirect') {
             $url = $_REQUEST['return_url'];
-            header("Location: $url", true, 307);
+            return redirect($url, 307);
         }
     }
 
     /**
      * Output a 1x1 transparent image
      */
-    protected function output_image()
+    protected function outputImage()
     {
-        header('Content-Type: image/png');
-        echo base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=');
+        return response(base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII='), 200, ['Content-Type' => 'image/png']);
     }
-
 
     /**
      * Authenticate
@@ -228,20 +236,23 @@ class Server
     {
         $this->startBrokerSession();
 
-        if (empty($_POST['username'])) $this->fail("No username specified", 400);
-        if (empty($_POST['password'])) $this->fail("No password specified", 400);
+        if (empty($_POST['username'])) {
+            $this->fail('No username specified', 400);
+        }
+        if (empty($_POST['password'])) {
+            $this->fail('No password specified', 400);
+        }
 
         try {
             $this->authenticate($_POST['username'], $_POST['password']);
-        } catch(AuthenticationException $e) {
+        } catch (AuthenticationException $e) {
             return $this->fail($e->getMessage(), 401);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return $this->fail($e->getMessage(), 400);
         }
 
         $this->setSessionData('sso_user', $_POST['username']);
-        $this->userInfo();
-
+        return $this->userInfo();
     }
 
     /**
@@ -252,8 +263,7 @@ class Server
         $this->startBrokerSession();
         $this->setSessionData('sso_user', null);
 
-        header('Content-type: application/json; charset=UTF-8');
-        http_response_code(204);
+        return response()->json(null, 200);
     }
 
     /**
@@ -264,19 +274,18 @@ class Server
         $this->startBrokerSession();
         $user = null;
 
-        $username = $this->get_session_data('sso_user');
+        $username = $this->getSessionData('sso_user');
 
         if ($username) {
             $user = $this->getUserInfo($username);
             if (!$user) {
-                return $this->fail("User not found", 500);
+                return $this->fail('User not found', 500);
             }
 
-            header('Content-type: application/json; charset=UTF-8');
-            echo json_encode($user);
+            return response()->json($user);
         }
 
-        return;
+        return response()->json(null, 200);
     }
 
     /**
@@ -295,13 +304,14 @@ class Server
     /**
      * Get session data
      */
-    protected function get_session_data($key)
+    protected function getSessionData($key)
     {
-        if ($key === 'id') return session_id();
+        if ($key === 'id') {
+            return session_id();
+        }
 
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
     }
-
 
     /**
      * An error occured.
@@ -312,35 +322,31 @@ class Server
             throw new Exception($message, $http_status);
         }
 
-        if ($http_status === 500) trigger_error($message, E_USER_WARNING);
+        if ($http_status === 500) {
+            trigger_error($message, E_USER_WARNING);
+        }
 
         if ($this->return_type === 'jsonp') {
-            echo $_REQUEST['callback'] . "(" . json_encode(['error' => $message]) . ", $http_status);";
+            echo $_REQUEST['callback'] . '(' . json_encode(['error' => $message]) . ", $http_status);";
             exit();
         }
 
         if ($this->return_type === 'redirect') {
             $url = $_REQUEST['return_url'] . '?sso_error=' . $message;
-            header("Location: $url", true, 307);
-            exit();
+            return redirect($url, 307);
         }
 
-        http_response_code($http_status);
-        header('Content-type: application/json; charset=UTF-8');
-
-        echo json_encode(['error' => $message]);
-
-        exit();
+        return response()->json(['error' => $message], $http_status);
     }
 
     /**
      * Get the API secret of a broker and other info if needed
      */
-    protected function get_broker_info($broker_id)
+    protected function getBrokerInfo($broker_id)
     {
         $broker = Broker::where('broker_id', $broker_id)->first();
 
-        if($broker) {
+        if ($broker) {
             return [
                 'secret' => $broker->broker_secret
             ];
@@ -362,12 +368,11 @@ class Server
             throw new AuthenticationException("Password isn't set.");
         }
 
-        if(Auth::attempt(['email' => $username, 'password' => $password])) {
+        if (Auth::attempt(['email' => $username, 'password' => $password])) {
             return;
         }
 
-        throw new AuthenticationException("User not found.");
-
+        throw new AuthenticationException('User not found.');
     }
 
     /**
@@ -385,5 +390,4 @@ class Server
     {
         return User::findOrFail($id);
     }
-
 }
