@@ -1,8 +1,6 @@
 <?php
-namespace losted\SSO;
 
-use App\User;
-use Illuminate\Support\Facades\Auth;
+namespace losted\SSO;
 
 use losted\SSO\Exceptions\Exception;
 use losted\SSO\Exceptions\NotAttachedException;
@@ -23,16 +21,23 @@ class Broker
 
     public function __construct($url = null, $broker = null, $secret = null, $cookie_lifetime = 3600)
     {
-        $this->url             = config('sso.server_endpoint', $url);
-        $this->broker          = config('sso.broker_id', $broker);
-        $this->secret          = config('sso.broker_secret', $secret);
+        $this->url = config('sso.server_endpoint', $url);
+        $this->broker = config('sso.broker_id', $broker);
+        $this->secret = config('sso.broker_secret', $secret);
         $this->cookie_lifetime = $cookie_lifetime;
 
-        if (!$this->url)    throw new \InvalidArgumentException("SSO server URL not specified");
-        if (!$this->broker) throw new \InvalidArgumentException("SSO broker id not specified");
-        if (!$this->secret) throw new \InvalidArgumentException("SSO broker secret not specified");
-
-        if (isset($_COOKIE[$this->getCookieName()])) $this->token = $_COOKIE[$this->getCookieName()];
+        if (!$this->url) {
+            throw new \InvalidArgumentException('SSO server URL not specified');
+        }
+        if (!$this->broker) {
+            throw new \InvalidArgumentException('SSO broker id not specified');
+        }
+        if (!$this->secret) {
+            throw new \InvalidArgumentException('SSO broker secret not specified');
+        }
+        if (isset($_COOKIE[$this->getCookieName()])) {
+            $this->token = $_COOKIE[$this->getCookieName()];
+        }
 
         $this->attach(true);
     }
@@ -50,7 +55,9 @@ class Broker
      */
     protected function getSessionId()
     {
-        if (!isset($this->token)) return null;
+        if (!isset($this->token)) {
+            return null;
+        }
 
         $checksum = hash('sha256', 'session' . $this->token . $this->secret);
         return "SSO-{$this->broker}-{$this->token}-$checksum";
@@ -61,7 +68,9 @@ class Broker
      */
     public function generateToken()
     {
-        if (isset($this->token)) return;
+        if (isset($this->token)) {
+            return;
+        }
 
         $this->token = base_convert(md5(uniqid(rand(), true)), 16, 36);
         setcookie($this->getCookieName(), $this->token, time() + $this->cookie_lifetime, '/');
@@ -92,13 +101,13 @@ class Broker
         $this->generateToken();
 
         $data = [
-            'command'  => 'attach',
-            'broker'   => $this->broker,
-            'token'    => $this->token,
+            'command' => 'attach',
+            'broker' => $this->broker,
+            'token' => $this->token,
             'checksum' => hash('sha256', 'attach' . $this->token . $this->secret)
         ] + $_GET;
 
-        return $this->url . "?" . http_build_query($data + $params);
+        return $this->url . '?' . http_build_query($data + $params);
     }
 
     /**
@@ -106,10 +115,12 @@ class Broker
      */
     public function attach($returnUrl = null)
     {
-        if ($this->isAttached()) return;
+        if ($this->isAttached()) {
+            return;
+        }
 
         if ($returnUrl === true) {
-            $protocol  = !empty($_SERVER['HTTPS']) ? 'https://' : 'http://';
+            $protocol = !empty($_SERVER['HTTPS']) ? 'https://' : 'http://';
             $returnUrl = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
         }
 
@@ -129,14 +140,17 @@ class Broker
         return $this->url . '?' . http_build_query($params);
     }
 
-
     /**
      * Log the client in the SSO server.
      */
     public function login($username = null, $password = null)
     {
-        if (!isset($username) && isset($_POST['username'])) $username = $_POST['username'];
-        if (!isset($password) && isset($_POST['password'])) $password = $_POST['password'];
+        if (!isset($username) && isset($_POST['username'])) {
+            $username = $_POST['username'];
+        }
+        if (!isset($password) && isset($_POST['password'])) {
+            $password = $_POST['password'];
+        }
 
         $result = $this->request('POST', 'login', compact('username', 'password'));
         $this->user_info = $result;
@@ -193,7 +207,7 @@ class Broker
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json', 'Authorization: Bearer '. $this->getSessionId()]);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json', 'Authorization: Bearer ' . $this->getSessionId()]);
 
         if ($method === 'POST' && !empty($data)) {
             $post = is_string($data) ? $data : http_build_query($data);
@@ -216,42 +230,24 @@ class Broker
             $this->clearToken();
             throw new NotAttachedException($data['error'] ?: $response, $httpCode);
         }
-        if ($httpCode >= 400) throw new Exception("Bad command: $command" ?: $response, $httpCode);
-
+        if ($httpCode >= 400) {
+            throw new Exception("Bad command: $command" ?: $response, $httpCode);
+        }
         return $data;
     }
 
     /**
      * Login the user to the SSO
      */
-    public function loginUser($username, $password) {
+    public function loginUser($username, $password)
+    {
         try {
             return $this->login($username, $password);
-        }
-        catch(NotAttachedException $e){
+        } catch (NotAttachedException $e) {
             return false;
-        }
-        catch(Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
         return true;
     }
-
-    public function loginCurrentUser($returnUrl = '/home') {
-        if($sso_user = $this->getUserInfo()) {
-
-            // We use the email field to link users in different apps
-            $user = User::where('email', $sso_user['email'])->first();
-
-            if($user) {
-                Auth::loginUsingId($user->id);
-            }
-
-            return redirect($returnUrl);
-
-        } else {
-            Auth::logout();
-        }
-    }
-
 }
