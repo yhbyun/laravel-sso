@@ -138,7 +138,11 @@ class SSOSessionGuard extends SessionGuard implements Guard
      */
     protected function getUserModel($details)
     {
-        $user = $this->provider->retrieveByCredentials([$this->username() => $details[$this->username()]]);
+        $user = null;
+        if (config('sso.refer_user_model', true)) {
+            $user = $this->provider->retrieveByCredentials([$this->username() => $details[$this->username()]]);
+        }
+
         if (is_null($user)) {
             $user = $this->createModel();
 

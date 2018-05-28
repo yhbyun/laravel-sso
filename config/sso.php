@@ -8,4 +8,6 @@ return [
     'broker_secret' => env('SSO_BROKER_SECRET', null),
     'username_field' => env('SSO_USERNAME_FIELD', 'email'),
     'custom_server' => env('SSO_CUSTOM_SERVER', null),
+    // whether get user info from local model ater SSO successful login
+    'refer_user_model' => env('SSO_REFER_USER_MODEL', true),
 ];
