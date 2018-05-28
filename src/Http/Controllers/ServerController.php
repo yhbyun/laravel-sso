@@ -3,7 +3,7 @@
 namespace Losted\SSO\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Losted\SSO\Server as SSO;
+use Losted\SSO\Contracts\Server as SSO;
 
 class ServerController extends \Illuminate\Routing\Controller
 {

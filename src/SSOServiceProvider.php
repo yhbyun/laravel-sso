@@ -2,7 +2,9 @@
 
 namespace Losted\SSO;
 
-class SSOServiceProvider extends \Illuminate\Support\ServiceProvider
+use Illuminate\Support\ServiceProvider;
+
+class SSOServiceProvider extends ServiceProvider
 {
     /**
      * Indicates if loading of the provider is deferred.
@@ -26,6 +28,13 @@ class SSOServiceProvider extends \Illuminate\Support\ServiceProvider
         ], 'migrations');
 
         $this->loadRoutesFrom(__DIR__ . '/routes.php');
+
+        $server = $this->app->config['sso']['custom_server'] ?? Server::class;
+
+        $this->app->bind(
+            \Losted\SSO\Contracts\Server::class,
+            $server
+        );
     }
 
     /**
