@@ -108,7 +108,7 @@ class SSOSessionGuard extends SessionGuard implements Guard
             $this->debug('ATTEMPT FOR USER...??' . (is_null($user) ? 'NO USER!' : 'GOT USER'));
             $this->login($user, $remember);
         } catch (\Exception | SsoException $e) {
-            $this->debug('EXCEPTION!: ' . get_class($e));
+            $this->debug('EXCEPTION!: ' . get_class($e), $e->getMessage());
             return false;
         }
     }
@@ -173,7 +173,7 @@ class SSOSessionGuard extends SessionGuard implements Guard
      * @param  array  $context
      * @return void
      */
-    protected function debug($message, array $context = [])
+    protected function debug($message, ...$context)
     {
         if ($this->debug) {
             \Log::debug($message, $context);
