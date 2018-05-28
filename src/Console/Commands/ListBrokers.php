@@ -1,8 +1,8 @@
 <?php
 
-namespace losted\SSO\Console\Commands;
+namespace Losted\SSO\Console\Commands;
 
-use losted\SSO\Models\Broker;
+use Losted\SSO\Models\Broker;
 
 class ListBrokers extends Command
 {
@@ -33,20 +33,19 @@ class ListBrokers extends Command
 
         $brokers = Broker::all();
 
-        $this->info("-----------------------------------------------------");
-        $this->info("All Brokers");
-        $this->info("-----------------------------------------------------");
+        $this->info('-----------------------------------------------------');
+        $this->info('All Brokers');
+        $this->info('-----------------------------------------------------');
 
-        if($brokers->count()) {
+        if ($brokers->count()) {
             foreach ($brokers as $broker) {
                 $this->info("Broker ID: {$broker->broker_id}");
                 $this->info("Broker Secret: {$broker->broker_secret}");
-                $this->info("-----------------------------------------------------");
+                $this->info('-----------------------------------------------------');
             }
         } else {
-            $this->info("No broker found.");
-            $this->info("-----------------------------------------------------");
+            $this->info('No broker found.');
+            $this->info('-----------------------------------------------------');
         }
-
     }
 }

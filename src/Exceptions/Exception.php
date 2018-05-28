@@ -1,10 +1,10 @@
 <?php
 
-namespace losted\SSO\Exceptions;
+namespace Losted\SSO\Exceptions;
 
 /**
  * Generic Exception
  */
-class Exception extends \Exception {
-
+class Exception extends \Exception
+{
 }

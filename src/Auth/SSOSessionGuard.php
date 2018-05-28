@@ -1,20 +1,20 @@
 <?php
 
-namespace losted\SSO\Auth;
+namespace Losted\SSO\Auth;
 
-use losted\SSO\Broker;
+use Losted\SSO\Broker;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Contracts\Auth\UserProvider;
 use Symfony\Component\HttpFoundation\Request;
-use losted\SSO\Exceptions\Exception as SSOExcption;
+use Losted\SSO\Exceptions\Exception as SSOExcption;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 
 class SSOSessionGuard extends SessionGuard implements Guard
 {
     /**
-     * @var \losted\SSO\Broker
+     * @var \Losted\SSO\Broker
      */
     protected $broker;
 

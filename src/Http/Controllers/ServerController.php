@@ -1,9 +1,9 @@
 <?php
 
-namespace losted\SSO\Http\Controllers;
+namespace Losted\SSO\Http\Controllers;
 
 use Illuminate\Http\Request;
-use losted\SSO\Server as SSO;
+use Losted\SSO\Server as SSO;
 
 class ServerController extends \Illuminate\Routing\Controller
 {

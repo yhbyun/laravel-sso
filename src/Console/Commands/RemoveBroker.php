@@ -1,8 +1,8 @@
 <?php
 
-namespace losted\SSO\Console\Commands;
+namespace Losted\SSO\Console\Commands;
 
-use losted\SSO\Models\Broker;
+use Losted\SSO\Models\Broker;
 
 class RemoveBroker extends Command
 {
@@ -33,11 +33,10 @@ class RemoveBroker extends Command
 
         $broker = Broker::where('broker_id', $this->argument('broker_id'))->first();
 
-        if($broker->delete()) {
-            $this->info("SSO Broker successfuly deleted!");
+        if ($broker->delete()) {
+            $this->info('SSO Broker successfuly deleted!');
         } else {
             $this->error('Something went wrong!');
         }
-
     }
 }

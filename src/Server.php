@@ -1,12 +1,12 @@
 <?php
 
-namespace losted\SSO;
+namespace Losted\SSO;
 
-use losted\SSO\Models\Broker;
+use Losted\SSO\Models\Broker;
 use Illuminate\Support\Facades\Auth;
-use losted\SSO\Exceptions\Exception;
+use Losted\SSO\Exceptions\Exception;
 use Illuminate\Support\Facades\Cache;
-use losted\SSO\Exceptions\AuthenticationException;
+use Losted\SSO\Exceptions\AuthenticationException;
 
 class Server
 {

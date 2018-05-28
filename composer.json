@@ -11,13 +11,13 @@
     "extra": {
         "laravel": {
             "providers": [
-                "losted\\SSO\\SSOServiceProvider"
+                "Losted\\SSO\\SSOServiceProvider"
             ]
         }
     },
     "autoload": {
-        "psr-0": {
-            "losted\\SSO": "src/"
+        "psr-4": {
+            "Losted\\SSO\\": "src/"
         },
         "files": [
             "src/functions.php"

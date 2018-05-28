@@ -1,6 +1,6 @@
 <?php
 
-namespace losted\SSO\Models;
+namespace Losted\SSO\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,5 +17,4 @@ class Broker extends Model
     protected $fillable = [
         'broker_id', 'broker_secret',
     ];
-
 }

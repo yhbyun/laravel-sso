@@ -1,8 +1,8 @@
 <?php
 
-namespace losted\SSO\Console\Commands;
+namespace Losted\SSO\Console\Commands;
 
-use losted\SSO\Models\Broker;
+use Losted\SSO\Models\Broker;
 
 class CreateBroker extends Command
 {
@@ -31,21 +31,20 @@ class CreateBroker extends Command
     {
         $this->check_sso_table();
 
-        $broker_id     = !empty($this->argument('broker_id')) ? $this->argument('broker_id') : 'broker_id_' . uniqid();
+        $broker_id = !empty($this->argument('broker_id')) ? $this->argument('broker_id') : 'broker_id_' . uniqid();
         $broker_secret = 'broker_secret_' . uniqid();
 
         $broker = Broker::create([
-            'broker_id'     => $broker_id,
+            'broker_id' => $broker_id,
             'broker_secret' => $broker_secret
         ]);
 
-        if($broker) {
-            $this->info("SSO Broker created successfuly!");
+        if ($broker) {
+            $this->info('SSO Broker created successfuly!');
             $this->info("Broker ID: $broker_id");
             $this->info("Broker Secret: $broker_secret");
         } else {
             $this->error('Something went wrong!');
         }
-
     }
 }

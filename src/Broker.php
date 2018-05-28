@@ -1,9 +1,9 @@
 <?php
 
-namespace losted\SSO;
+namespace Losted\SSO;
 
-use losted\SSO\Exceptions\Exception;
-use losted\SSO\Exceptions\NotAttachedException;
+use Losted\SSO\Exceptions\Exception;
+use Losted\SSO\Exceptions\NotAttachedException;
 
 class Broker
 {
