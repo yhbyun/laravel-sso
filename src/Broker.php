@@ -231,7 +231,7 @@ class Broker
             throw new NotAttachedException($data['error'] ?: $response, $httpCode);
         }
         if ($httpCode >= 400) {
-            throw new Exception("Bad command: $command" ?: $response, $httpCode);
+            throw new Exception($data['error'] ?: $response, $httpCode);
         }
         return $data;
     }
