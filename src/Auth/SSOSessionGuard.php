@@ -107,8 +107,11 @@ class SSOSessionGuard extends SessionGuard implements Guard
             $this->debug('this->getUserModel worked');
             $this->debug('ATTEMPT FOR USER...??' . (is_null($user) ? 'NO USER!' : 'GOT USER'));
             $this->login($user, $remember);
+
+            return true;
         } catch (\Exception | SsoException $e) {
             $this->debug('EXCEPTION!: ' . get_class($e), $e->getMessage());
+
             return false;
         }
     }
